@@ -1,0 +1,353 @@
+
+BEGINNER GUIDE: HOW THIS PYTHON THEATRE TICKET SYSTEM WORKS
+===========================================================
+
+This guide explains EVERY LINE of the program in very simple terms.
+Even if you have never seen Python before, this will help you understand.
+
+The project has 2 Python files:
+1. main.py              → The menu & user interaction
+2. theater_module.py    → The file handling & ticket logic
+
+-----------------------------------------------------------
+PART 1: theater_module.py (The Engine of the System)
+-----------------------------------------------------------
+
+Line 1:
+FILENAME = "tickets.txt"
+
+What it does:
+This creates a variable called FILENAME and stores the text "tickets.txt".
+This is the file where all ticket data will be saved.
+
+Think of it like:
+We are naming the notebook where we store ticket info.
+
+-----------------------------------------------------------
+Function: save_ticket(play_name, seat, price)
+-----------------------------------------------------------
+
+def save_ticket(play_name, seat, price):
+
+What it does:
+Defines a function (a reusable block of code) called save_ticket.
+It accepts 3 pieces of data:
+- play_name → name of the play
+- seat → seat number
+- price → ticket price
+
+Example call:
+save_ticket("Hamlet", "A1", "20")
+
+-----------------------------------------------------------
+
+    line = f"{play_name}-{seat}-{price}\n"
+
+What it does:
+Creates a formatted string using f-string.
+It joins the values with hyphens.
+
+If:
+play_name = Hamlet
+seat = A1
+price = 20
+
+Then line becomes:
+"Hamlet-A1-20\n"
+
+\n means "new line".
+
+-----------------------------------------------------------
+
+    with open(FILENAME, "a") as file:
+
+What it does:
+Opens tickets.txt in append mode ("a").
+Append mode means: add new data without deleting old data.
+
+"as file" → gives the opened file the nickname "file".
+
+-----------------------------------------------------------
+
+        file.write(line)
+
+What it does:
+Writes the line into the file.
+
+Result in tickets.txt:
+Hamlet-A1-20
+
+-----------------------------------------------------------
+Function: read_all_tickets()
+-----------------------------------------------------------
+
+def read_all_tickets():
+
+Creates a function that reads all saved tickets.
+
+-----------------------------------------------------------
+
+    try:
+
+Python tries to run the next block of code.
+
+-----------------------------------------------------------
+
+        with open(FILENAME, "r") as file:
+
+Opens the file in read mode ("r").
+
+-----------------------------------------------------------
+
+            return [line.strip().split("-") for line in file.readlines()]
+
+This line looks scary, but let's break it down.
+
+file.readlines() → gets all lines from the file.
+Example:
+["Hamlet-A1-20\n", "Macbeth-B2-25\n"]
+
+line.strip() → removes \n (newline).
+Result:
+"Hamlet-A1-20"
+
+split("-") → splits into parts.
+Result:
+["Hamlet", "A1", "20"]
+
+Final return:
+[
+  ["Hamlet", "A1", "20"],
+  ["Macbeth", "B2", "25"]
+]
+
+-----------------------------------------------------------
+
+    except FileNotFoundError:
+        return []
+
+If the file doesn't exist yet, return an empty list instead of crashing.
+
+-----------------------------------------------------------
+Function: search_ticket(term)
+-----------------------------------------------------------
+
+def search_ticket(term):
+
+Search for tickets containing a play name.
+
+-----------------------------------------------------------
+
+    all_tickets = read_all_tickets()
+
+Gets all tickets from file.
+
+-----------------------------------------------------------
+
+    return [t for t in all_tickets if term.lower() in t[0].lower()]
+
+Breakdown:
+
+t[0] → play name
+term.lower() → makes search lowercase
+This allows case-insensitive search.
+
+Example:
+search_ticket("ham")
+
+Returns Hamlet ticket.
+
+-----------------------------------------------------------
+Function: update_ticket(play_name, new_seat, new_price)
+-----------------------------------------------------------
+
+Updates an existing ticket.
+
+-----------------------------------------------------------
+
+    tickets = read_all_tickets()
+    updated = False
+
+Loads tickets and assumes nothing updated yet.
+
+-----------------------------------------------------------
+
+    with open(FILENAME, "w") as file:
+
+Opens file in write mode ("w").
+IMPORTANT: This deletes old content and rewrites everything.
+
+-----------------------------------------------------------
+
+        for t in tickets:
+
+Loops through all tickets.
+
+-----------------------------------------------------------
+
+            if t[0].lower() == play_name.lower():
+
+If play name matches.
+
+-----------------------------------------------------------
+
+                file.write(f"{t[0]}-{new_seat}-{new_price}\n")
+                updated = True
+
+Writes updated data and marks success.
+
+-----------------------------------------------------------
+
+            else:
+                file.write(f"{t[0]}-{t[1]}-{t[2]}\n")
+
+Writes old data unchanged.
+
+-----------------------------------------------------------
+
+    return updated
+
+Returns True if update happened.
+
+-----------------------------------------------------------
+PART 2: main.py (User Interface & Menu)
+-----------------------------------------------------------
+
+import theater_module
+
+Imports functions from theater_module.py.
+
+-----------------------------------------------------------
+
+import matplotlib.pyplot as plt
+
+Imports chart library to draw graphs.
+
+-----------------------------------------------------------
+Function: draw_sales_chart()
+-----------------------------------------------------------
+
+tickets = theater_module.read_all_tickets()
+
+Gets all tickets.
+
+-----------------------------------------------------------
+
+if not tickets:
+    print("No data available to create a chart.")
+    return
+
+If no data, stop function.
+
+-----------------------------------------------------------
+
+sales_data = {}
+
+Creates empty dictionary to count ticket sales.
+
+-----------------------------------------------------------
+
+for t in tickets:
+    play_name = t[0]
+    sales_data[play_name] = sales_data.get(play_name, 0) + 1
+
+Counts how many tickets per play.
+
+Example result:
+{"Hamlet": 3, "Macbeth": 2}
+
+-----------------------------------------------------------
+
+labels = list(sales_data.keys())
+sizes = list(sales_data.values())
+
+Prepare data for chart.
+
+-----------------------------------------------------------
+
+plt.figure(figsize=(8, 6))
+
+Creates chart window.
+
+-----------------------------------------------------------
+
+plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
+
+Draws pie chart.
+
+-----------------------------------------------------------
+
+plt.title("Ticket Sales Distribution by Play")
+
+Adds chart title.
+
+-----------------------------------------------------------
+
+plt.show()
+
+Displays the chart.
+
+-----------------------------------------------------------
+Function: main()
+-----------------------------------------------------------
+
+while True:
+
+Creates an infinite loop so the menu keeps showing.
+
+-----------------------------------------------------------
+
+print menu options
+
+Displays choices to user.
+
+-----------------------------------------------------------
+
+choice = input("Select an option: ")
+
+Gets user input.
+
+-----------------------------------------------------------
+
+if choice == "1":
+
+Create ticket option.
+
+-----------------------------------------------------------
+
+theater_module.save_ticket(play, seat, price)
+
+Saves ticket to file.
+
+-----------------------------------------------------------
+
+elif choice == "2":
+
+Search option.
+
+-----------------------------------------------------------
+
+elif choice == "3":
+
+Update option.
+
+-----------------------------------------------------------
+
+elif choice == "4":
+
+Show all tickets + chart.
+
+-----------------------------------------------------------
+
+elif choice == "5":
+
+Exit program.
+
+-----------------------------------------------------------
+
+if __name__ == "__main__":
+    main()
+
+This ensures main() runs only when this file is executed.
+
+
