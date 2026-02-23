@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-File Operation Diagnostic Tool
-Pinpoints why file operations fail and suggests fixes
-"""
-
 import os
 import sys
 import stat
